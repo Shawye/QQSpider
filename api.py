@@ -1,6 +1,7 @@
 import hashlib
 import time
 import random
+import re
 import string
 from urllib.parse import quote
 import requests
@@ -47,6 +48,12 @@ class tencentAPI(object):
         return params
 
     def get_text_feel(self, plus_item):
+        # pre-process
+        # delete emoji
+
+        # split = re.split('[,，.。:：!！]', i)
+        plus_item, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", plus_item)
+
         url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textpolar"  # 情感分析的API地址
         payload = self.get_params(plus_item)  # 获取请求参数
         r = requests.get(url, params=payload)

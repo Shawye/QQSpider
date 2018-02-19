@@ -12,8 +12,8 @@ if __name__ == '__main__':
     #l = [877458971]
     #b = methods.get_contents()
     #b.get_given(l)
-    c = analyze.analyze()
-    l = c.get_shuoshuo('877458971')
-    d = api.tencentAPI()
-    for i in l:
-        result, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", i)
+
+    #l = c.get_shuoshuo('601841082')
+    analyze.get_wordcloud('601841082')
+
+
