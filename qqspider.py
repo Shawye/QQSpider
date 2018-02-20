@@ -51,9 +51,9 @@ def __get_cookie_from_auto():
 
     url = 'https://qzone.qq.com/'
     driver.get(url)
-
     # switch frame to login frame, important
     driver.switch_to.frame('login_frame')
+    time.sleep(1)
     driver.find_element_by_id('switcher_plogin').click()
     time.sleep(1)
     driver.find_element_by_id('u').send_keys(__config['username'])
@@ -65,7 +65,7 @@ def __get_cookie_from_auto():
     cookie = ""
     for item in driver.get_cookies():
         cookie += item["name"] + "=" + item["value"] + "; "
-    driver.close()
+    driver.quit()
 
     print("[%s] <get cookies> ok" % (time.ctime(time.time())))
     return cookie
@@ -135,6 +135,8 @@ def init():
 
 def get_friends_list():
     print("[%s] <get friends> start" % (time.ctime(time.time())))
+    if not os.path.exists('friends/'):
+        os.mkdir('friends/')
     position = 0
     while True:
         url = __friends_url + '&offset=' + str(position)
@@ -211,6 +213,8 @@ def __get_each_item(num):
 
 def get_all_friends_contents():
     print("[%s] <get contents> start" % (time.ctime(time.time())))
+    if not os.path.exists('results/'):
+        os.mkdir('results/')
     try:
         with open('friends/numbers.txt', encoding='utf-8') as f:
             numbers_list = eval(f.read())
@@ -234,18 +238,19 @@ def get_all_friends_contents():
         print("[%s] <get contents> ok" % (time.ctime(time.time())))
 
 
-def get_given_friend_contents(given):
+def get_given_friends_contents(given):
     print("[%s] <get contents> start" % (time.ctime(time.time())))
+    if not os.path.exists('results/'):
+        os.mkdir('results/')
     try:
         with open('friends/numbers.txt', encoding='utf-8') as f:
             numbers_list = eval(f.read())
     except Exception as e:
         print("[%s] <get contents> make sure numbers.txt exists" % (time.ctime(time.time())))
         print(e)
-    for i in range(len(numbers_list)):
-        item = numbers_list[i]
-        qq = item['data']
-        if qq in given:
+    numbers = [i['data'] for i in numbers_list]
+    for qq in given:
+        if qq in numbers:
             print("[%s] <get contents> qq: %s" % (time.ctime(time.time()), qq))
             try:
                 __get_each_item(qq)
@@ -265,6 +270,8 @@ def __segment(num):
     except Exception as e:
         print("[%s] <get contents> make sure %s.txt exists" % (num, time.ctime(time.time())))
         print(e)
+    if not os.path.exists('analyze/'):
+        os.mkdir('analyze/')
     with open('./analyze/%s-seg.txt' % num, 'w', encoding='utf-8') as wf:
         for con in content:
             # replace #
@@ -276,6 +283,8 @@ def __segment(num):
 
 
 def get_shuoshuo(given):
+    if not os.path.exists('analyze/'):
+        os.mkdir('analyze')
     for num in given:
         print("[%s] <get shuoshuo> qq: %s start" % (time.ctime(time.time()), num))
         files = [i for i in os.listdir('results/%s' % num) if i.endswith(".txt")]

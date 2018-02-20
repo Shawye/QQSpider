@@ -1,10 +1,23 @@
 import qqspider
 
 if __name__ == '__main__':
+    # init crawler's settings
     qqspider.init()
-    #qqspider.get_friends_list()
-    #qqspider.get_all_friends_contents()
-    #qqspider.get_given_friend_contents(['601841082'])
-    #qqspider.get_shuoshuo(['601841082'])
-    qqspider.get_text_feel('601841082')
-    qqspider.get_word_cloud('601841082')
+
+    # get friends list
+    qqspider.get_friends_list()
+
+    # get all friends' contents
+    # qqspider.get_all_friends_contents()
+
+    # get specified friends' contents
+    qqspider.get_given_friends_contents([' '])
+
+    # get specified friends' shuoshuo
+    qqspider.get_shuoshuo([' '])
+
+    # analyze specified friends' text feel
+    qqspider.get_text_feel(' ')
+
+    # generate specified friends' word cloud
+    qqspider.get_word_cloud(' ')
