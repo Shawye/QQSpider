@@ -1,5 +1,3 @@
-import requests
-import time
 import sys
 import json
 from urllib import parse
@@ -11,12 +9,8 @@ import re
 import string
 from urllib.parse import quote
 import requests
-from os import path
-from scipy.misc import imread
-import matplotlib.pyplot as plt
-import codecs
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
+# global variable statement
 __cookie = None
 __header = {'host': 'h5.qzone.qq.com',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
@@ -28,18 +22,57 @@ __header = {'host': 'h5.qzone.qq.com',
 __g_tk = None
 __friends_url = None
 __session = None
+__config = None
+
+
+def __read_config():
+    con = {}
+    try:
+        with open('./config.json') as f:
+            con = eval(f.read())
+    except Exception as e:
+        print("[%s] <error> check your json format" % (time.ctime(time.time())))
+        print(e)
+    return con
 
 
 def __get_cookie_from_file():
-    with open('./cookie.txt') as f:
-        return f.read().replace('\n', '')
+    return __config['cookie']
 
 
 def __get_cookie_from_auto():
-    pass
+    from selenium import webdriver
+    print("[%s] <get cookies> start" % (time.ctime(time.time())))
+
+    # set firefox headless, run in background
+    firefox_options = webdriver.FirefoxOptions()
+    firefox_options.set_headless()
+    driver = webdriver.Firefox(firefox_options=firefox_options)
+
+    url = 'https://qzone.qq.com/'
+    driver.get(url)
+
+    # switch frame to login frame, important
+    driver.switch_to.frame('login_frame')
+    driver.find_element_by_id('switcher_plogin').click()
+    time.sleep(1)
+    driver.find_element_by_id('u').send_keys(__config['username'])
+    driver.find_element_by_id('p').send_keys(__config['password'])
+    time.sleep(1)
+    driver.find_element_by_id('login_button').click()
+    time.sleep(1)
+
+    cookie = ""
+    for item in driver.get_cookies():
+        cookie += item["name"] + "=" + item["value"] + "; "
+    driver.close()
+
+    print("[%s] <get cookies> ok" % (time.ctime(time.time())))
+    return cookie
 
 
 def __get_g_tk():
+    # get g_tk
     start = __cookie.find('p_skey=')
     end = __cookie.find(';', start)
     key = __cookie[start + 7: end]
@@ -81,8 +114,19 @@ def __get_friends_url():
 
 
 def init():
-    global __cookie, __header, __g_tk, __friends_url, __session
-    __cookie = __get_cookie_from_file()
+    # assign statement
+    global __cookie, __header, __g_tk, __friends_url, __session, __config
+    __config = __read_config()
+    if __config['auto']:
+        __cookie = __get_cookie_from_auto()
+        with open('./config.json') as f:
+            con = eval(f.read())
+            con['cookie'] = __cookie
+            con['auto'] = False
+        with open('./config.json', 'w') as wf:
+            wf.write(str(con))
+    else:
+        __cookie = __get_cookie_from_file()
     __header['Cookie'] = __cookie
     __g_tk = __get_g_tk()
     __friends_url = __get_friends_url()
@@ -99,24 +143,33 @@ def get_friends_list():
         res = requests.get(url, headers=__header)
         html = res.text
 
+        # cookie invalid
         if "请先登录" in html:
             print("[%s] <get friends> some error occur" % (time.ctime(time.time())))
             break
 
-        html = html[10: -2]
-        html_dict = dict(eval(html))
-        html_data = html_dict["data"]
-        html_list = html_dict["data"]["uinlist"]
+        # html[10: -2] may cause a error
+        try:
+            html = html[10: -2]
+            html_dict = dict(eval(html))
+            html_data = html_dict["data"]
+            html_list = html_dict["data"]["uinlist"]
+        except Exception as e:
+            print("[%s] <get friends> some error occur" % (time.ctime(time.time())))
+            print(e)
 
         if not len(html_list):
             print("[%s] <get friends> ok" % (time.ctime(time.time())))
             break
 
+        # write initial data crawled from qqzone with format 'json'
         with open('friends/position' + str(position) + '.json', 'w', encoding='utf-8') as f:
             f.write(str(html_data))
 
         position += 50
         time.sleep(1)
+
+    # get useful data
     print("[%s] <get numbers> start" % (time.ctime(time.time())))
     friends = [i for i in os.listdir('friends') if i.endswith("json")]
     numbers = []
@@ -158,34 +211,42 @@ def __get_each_item(num):
 
 def get_all_friends_contents():
     print("[%s] <get contents> start" % (time.ctime(time.time())))
-    with open('friends/numbers.txt', encoding='utf-8') as f:
-        numbers_list = eval(f.read())
+    try:
+        with open('friends/numbers.txt', encoding='utf-8') as f:
+            numbers_list = eval(f.read())
+    except Exception as e:
+        print("[%s] <get contents> make sure numbers.txt exists" % (time.ctime(time.time())))
+        print(e)
 
     while numbers_list:
         save = numbers_list[:]
         item = numbers_list.pop()
         qq = item['data']
         print("[%s] <get contents> qq: %s" % (time.ctime(time.time()), qq))
-
         try:
             __get_each_item(qq)
+        # restore the file
         except Exception as e:
             with open('friends/numbers.txt', 'w', encoding='utf-8') as f:
                 f.write(str(save))
+            print(e)
     else:
         print("[%s] <get contents> ok" % (time.ctime(time.time())))
 
 
 def get_given_friend_contents(given):
     print("[%s] <get contents> start" % (time.ctime(time.time())))
-    with open('friends/numbers.txt', encoding='utf-8') as f:
-        numbers_list = eval(f.read())
+    try:
+        with open('friends/numbers.txt', encoding='utf-8') as f:
+            numbers_list = eval(f.read())
+    except Exception as e:
+        print("[%s] <get contents> make sure numbers.txt exists" % (time.ctime(time.time())))
+        print(e)
     for i in range(len(numbers_list)):
         item = numbers_list[i]
         qq = item['data']
         if qq in given:
             print("[%s] <get contents> qq: %s" % (time.ctime(time.time()), qq))
-
             try:
                 __get_each_item(qq)
             except Exception as e:
@@ -198,11 +259,17 @@ def get_given_friend_contents(given):
 
 def __segment(num):
     print("[%s] <segmentation> qq: %s start" % (time.ctime(time.time()), num))
-    with open('./analyze/%s.txt' % num, encoding='utf-8') as f:
-        content = eval(f.read())
+    try:
+        with open('./analyze/%s.txt' % num, encoding='utf-8') as f:
+            content = eval(f.read())
+    except Exception as e:
+        print("[%s] <get contents> make sure %s.txt exists" % (num, time.ctime(time.time())))
+        print(e)
     with open('./analyze/%s-seg.txt' % num, 'w', encoding='utf-8') as wf:
         for con in content:
+            # replace #
             con, number = re.subn('[#]', "", con)
+            # replace [emoji]
             con, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", con)
             wf.write(con)
         print("[%s] <segmentation> qq: %s ok" % (time.ctime(time.time()), num))
@@ -231,22 +298,23 @@ def get_shuoshuo(given):
 
 
 def __curl_md5(src):
+    # md5
     m = hashlib.md5()
-    m.update(src.encode('UTF-8'))
+    m.update(src.encode('utf-8'))
     return m.hexdigest()
 
 
 def __get_params(plus_item):
-    # 请求时间戳（秒级），用于防止请求重放（保证签名5分钟有效
+    # request timestamp
     t = time.time()
     time_stamp = str(int(t))
 
-    # 请求随机字符串，用于保证签名不可预测
+    # request a random string
     nonce_str = ''.join(random.sample(string.ascii_letters + string.digits, 10))
 
-    # 应用标志，这里修改成自己的id和key
-    app_id = '1106662237'
-    app_key = 'tR3QPnWnYEDl5qlG'
+    # config.json
+    app_id = __config['app_id']
+    app_key = __config['app_key']
 
     params = {'app_id': app_id,
               'text': plus_item,
@@ -270,57 +338,96 @@ def __get_params(plus_item):
     return params
 
 
-def get_text_feel(plus_item):
-    # pre-process
-    # delete emoji
+def get_text_feel(num):
+    url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textpolar"
+    text_url = './analyze/%s.txt' % num
+    print("[%s] <get text feel> start" % (time.ctime(time.time())))
+    try:
+        with open(text_url, encoding='utf-8') as f:
+            all_chaps = eval(f.read())
+    except Exception as e:
+        print("[%s] <get text feel> make sure %s.txt exists" % (time.ctime(time.time()), num))
+        print(e)
+    valid_count = 0
+    for plus_item in all_chaps:
+        plus_item, number = re.subn('[#]', "", plus_item)
+        plus_item, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", plus_item)
+        payload = __get_params(plus_item)  # 获取请求参数
+        r = requests.get(url, params=payload)
+        if r.json()['ret'] == 0:
+            polar = r.json()['data']['polar']
+            print('confidence: %d, polar: %s, text: %s' % (r.json()['data']['confd'],
+                  '负面' if polar == -1 else '中性' if polar == 0 else '正面', r.json()['data']['text']))
+            valid_count += 1
+    print("[%s] <get text feel> ok" % (time.ctime(time.time())))
+    print("[%s] <get text feel> %d valid, %d in total" % (time.ctime(time.time()), valid_count, len(all_chaps)))
 
-    # split = re.split('[,，.。:：!！]', i)
-    plus_item, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", plus_item)
 
-    url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textpolar"  # 情感分析的API地址
-    payload = __get_params(plus_item)  # 获取请求参数
-    r = requests.get(url, params=payload)
-    return r.json()
+def get_word_cloud(num):
+    print("[%s] <get word cloud> start" % (time.ctime(time.time())))
+    import jieba
+    from scipy.misc import imread
+    import matplotlib.pyplot as plt
+    from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+    text_url = './analyze/%s-seg.txt' % num
+    mask_url = './word/bg.jpg'
+    try:
+        with open(text_url, encoding='utf-8') as f:
+            all_chaps = [chap for chap in f.readlines()]
+    except Exception as e:
+        print("[%s] <get word cloud> make sure %s-seg.txt exists" % (time.ctime(time.time()), num))
+        print(e)
+    dictionary = []
+    for i in range(len(all_chaps)):
+        words = list(jieba.cut(all_chaps[i]))
+        dictionary.append(words)
 
+    # flat
+    tmp = []
+    for chapter in dictionary:
+        for word in chapter:
+            tmp.append(word.encode('utf-8'))
+    dictionary = tmp
 
-def get_wordcloud(num):
-    __basePath = './word'
-    __fileNamePath = u'./analyze/' + num + '-seg.txt'
-    __stopWordPath = u'./word/stopwords.txt'
-    __imagePath = u'./word/bg.jpg'
-    __ttfPath = u'./word/SourceHanSans-Regular.otf'
-    d = path.dirname(__file__)
-    # UTF8_2_GBK(__fileNamePathO, __fileNamePathN)
-    # Read the whol text.
-    text = open(path.join(d, __fileNamePath), encoding='utf-8').read()
+    # filter
+    unique_words = list(set(dictionary))
 
-    # read the mask / color image
-    # taken from http://jirkavinse.deviantart.com/art/quot-Real-Life-quot-Alice-282261010
-    alice_coloring = imread(path.join(d, __imagePath))
+    freq = []
+    for word in unique_words:
+        freq.append((word.decode('utf-8'), dictionary.count(word)))
 
-    wc = WordCloud(background_color="black",
-                   max_words=2000,
-                   mask=alice_coloring,
-                   stopwords=STOPWORDS.add("said"),
-                   max_font_size=40,
-                   random_state=42,
-                   font_path=__ttfPath)
-    # generate word cloud
-    wc.generate(text)
+    # sort
+    freq.sort(key=lambda x: x[1], reverse=True)
 
-    # create coloring from image
-    image_colors = ImageColorGenerator(alice_coloring)
+    # broke_words
+    broke_words = []
 
-    # show
-    # plt.imshow(wc)
-    # plt.axis("off")
-    # plt.show()
-    # recolor wordcloud and show
-    # we could also give color_func=image_colors directly in the constructor
-    plt.imshow(wc.recolor(color_func=image_colors))
-    plt.axis("off")
+    try:
+        with open('word/stopwords.txt') as f:
+            broke_words = [i.strip() for i in f.readlines()]
+    except Exception as e:
+        broke_words = STOPWORDS
+
+    # remove broke_words
+    freq = [i for i in freq if i[0] not in broke_words]
+
+    # remove monosyllable words
+    freq = [i for i in freq if len(i[0]) > 1]
+
+    img_mask = imread(mask_url)
+    img_colors = ImageColorGenerator(img_mask)
+
+    wc = WordCloud(background_color="white",  # bg color
+                   max_words=2000,  # max words
+                   font_path=u'./word/SourceHanSans-Regular.otf',
+                   mask=img_mask,  # bg image
+                   max_font_size=60,  # max font size
+                   random_state=42)
+
+    wc.fit_words(dict(freq))
+
+    plt.imshow(wc)
+    plt.axis('off')
+
+    print("[%s] <get word cloud> ok" % (time.ctime(time.time())))
     plt.show()
-    # plt.imshow(alice_coloring, cmap=plt.cm.gray)
-    # plt.axis("off")
-    # plt.show()
-

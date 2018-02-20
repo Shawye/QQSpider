@@ -102,6 +102,6 @@ ENV/
 
 # pycharm
 .idea/
-analyze/
-friends/
-results/
+geckodriver.log
+ghostdriver.log
+
