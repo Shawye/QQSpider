@@ -1,7 +1,9 @@
 # QQSpider
-> A python crawler to grab "shuoshuo" from QQ zone
+```
+A python crawler to grab "shuoshuo" from QQ zone
 
-> 一个python爬虫，用来抓取QQ空间的说说，并做相应的分析。
+一个python爬虫，用来抓取QQ空间的说说，并做相应的分析。
+```
 
 ## Dependency
 1. python(>3.0)
