@@ -11,7 +11,7 @@ A python crawler to grab "shuoshuo" from QQ zone
 2. json, hashlib, time, random, re, string (come with)
 3. urllib, requests
 4. selenium, geckodriver, firefox(>56.0) or Chrome(>?)
-5. jieba, scipy, matplotlib, wordcloud
+5. jieba, scipy, matplotlib, wordcloud, PIL
 ```
 
 ## Usage
@@ -31,6 +31,8 @@ A python crawler to grab "shuoshuo" from QQ zone
     > qqspider.get_all_friends_contents(class \<list>): 爬取所有好友(所有信息)
 
     > qqspider.get_shuoshuo(class \<list>): 爬取指定好友的说说
+
+    > qqspider.get_photos(class \<list>): 爬取指定好友的个人图片
 
     > qqspider.get_text_feel(class \<string>): 对指定好友的说说进行情感分析
 
