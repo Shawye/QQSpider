@@ -1,8 +1,8 @@
 # QQSpider
 ```
-A python crawler to grab "shuoshuo" from QQ zone
+A python crawler to grab personal dynamics (including text and pictures) from QQ zone
 
-一个python爬虫，用来抓取QQ空间的说说，并做相应的分析。
+一个python爬虫，用来抓取QQ空间的说说和图片，并提供了相应的分析接口
 ```
 
 ## Dependency
@@ -17,6 +17,8 @@ A python crawler to grab "shuoshuo" from QQ zone
 ## Usage
 
 1. config.json
+    > username & password: QQ账号和密码
+
     > auto: True时将自动获取cookies(提供用户名和密码), False时手动填写cookies
 
     > app_id & app_key: 腾讯AI接口
