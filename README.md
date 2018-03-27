@@ -2,7 +2,7 @@
 ```
 A python crawler to grab "shuoshuo" from QQ zone
 
-一个python爬虫，用来抓取QQ空间的说说，并做相应的分析。
+一个python爬虫，用来抓取QQ空间和朋友圈的文字信息，并做相应的分析
 ```
 
 ## Dependency
@@ -63,7 +63,7 @@ A python crawler to grab "shuoshuo" from QQ zone
 ```python
 init() # Set up "config.json"
 get_friends_list(): # Just need once
-get_given_friends_contents() or get_all_friends_contents() # Just need once
+get_given_friends_contents() or get_all_friends_contents()
 get_shuoshuo()
 get_text_feel() or get_word_cloud()
 ```
@@ -71,7 +71,7 @@ get_text_feel() or get_word_cloud()
 ```python
 init() # Set up "config.json"
 get_friends_list() # Just need once
-get_given_friends_contents() # Just need once
+get_given_friends_contents()
 get_photos()
 ```
 3. Wechat
@@ -81,7 +81,9 @@ get_wechat_word_cloud()
 ```
 
 
-## ScreenShots
+## ScreenShots (Word Cloud)
 
+![](./images/7.png) 
 
+![](./images/8.png) 
 
