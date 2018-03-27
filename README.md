@@ -83,7 +83,7 @@ get_wechat_word_cloud()
 
 ## ScreenShots (Word Cloud)
 
-![](./images/7.png) 
+![](./images/7.PNG) 
 
 ![](./images/8.png) 
 
