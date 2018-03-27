@@ -439,20 +439,16 @@ def get_text_feel(num):
     print("[%s] <get text feel> ok" % (time.ctime(time.time())))
     print("[%s] <get text feel> %d valid, %d in total" % (time.ctime(time.time()), valid_count, len(all_chaps)))
 
-
-def get_word_cloud(num):
-    print("[%s] <get word cloud> start" % (time.ctime(time.time())))
+def __gen_word_cloud(text_url, mask_url):
     import jieba
     from scipy.misc import imread
     import matplotlib.pyplot as plt
     from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-    text_url = './results/shuoshuo/%s-seg.txt' % num
-    mask_url = './word/bg.jpg'
     try:
         with open(text_url, encoding='utf-8') as f:
             all_chaps = [chap for chap in f.readlines()]
     except Exception as e:
-        print("[%s] <get word cloud> make sure %s-seg.txt exists" % (time.ctime(time.time()), num))
+        print("[%s] <get word cloud> make sure *-seg.txt exists" % (time.ctime(time.time())))
         print(e)
     dictionary = []
     for i in range(len(all_chaps)):
@@ -508,3 +504,36 @@ def get_word_cloud(num):
 
     print("[%s] <get word cloud> ok" % (time.ctime(time.time())))
     plt.show()
+
+
+def get_word_cloud(num):
+    print("[%s] <get word cloud> start" % (time.ctime(time.time())))
+    text_url = './results/shuoshuo/%s-seg.txt' % num
+    mask_url = './word/boy_mask.png'
+    __gen_word_cloud(text_url, mask_url)
+
+
+def __segment_wechat():
+    print("[%s] <segmentation> wechat start" % (time.ctime(time.time())))
+    with open('./results/exported_sns.json', encoding='utf-8') as f:
+        raw = f.read().replace("false", "False").replace("true", "True")
+        raw_content = eval(raw)
+    content = []
+    for i in raw_content:
+        content.append(i["content"])
+    with open('./results/exported_sns-seg.txt', 'w', encoding='utf-8') as wf:
+        for con in content:
+            # replace #
+            con, number = re.subn('[#]', "", con)
+            # replace [emoji]
+            con, number = re.subn(r'\[(.*?)\](.*?)\[(.*?)\]', "", con)
+            wf.write(con)
+        print("[%s] <segmentation> wechat ok" % (time.ctime(time.time())))
+
+
+def get_wechat_word_cloud():
+    __segment_wechat()
+    print("[%s] <get word cloud> start" % (time.ctime(time.time())))
+    text_url = './results/exported_sns-seg.txt'
+    mask_url = './word/boy_mask.png'
+    __gen_word_cloud(text_url, mask_url)

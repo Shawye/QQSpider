@@ -24,3 +24,6 @@ if __name__ == '__main__':
 
     # generate specified friends' word cloud
     qqspider.get_word_cloud('')
+
+    # generate specified friends' wechat word cloud
+    qqspider.get_wechat_word_cloud()

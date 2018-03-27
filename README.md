@@ -14,21 +14,23 @@ A python crawler to grab "shuoshuo" from QQ zone
 5. jieba, scipy, matplotlib, wordcloud, PIL
 ```
 
-## Usage
+## Info
 
 1. config.json
-    > auto: True时将自动获取cookies(提供用户名和密码), False时手动填写cookies
+    > auto:  True: 自动获取cookies, 需要账号密码
+    >
+    > ​	   False: 手动输入cookies, 建议
 
     > app_id & app_key: 腾讯AI接口
 
 2. API
     > qqspider.init(): 爬虫的初始参数设置，包括cookies在内
 
-    > qqspider.get_friends_list(): 获取所有好友列表
+    > qqspider.get_friends_list(): 获取所有好友列表，只需获取一次
     
-    > qqspider.get_given_friends_contents(class \<list>): 爬取指定好友(所有信息)
+    > qqspider.get_given_friends_contents(class \<list>): 爬取指定好友(所有信息)，只需获取一次
 
-    > qqspider.get_all_friends_contents(class \<list>): 爬取所有好友(所有信息)
+    > qqspider.get_all_friends_contents(class \<list>): 爬取所有好友(所有信息)，只需获取一次
 
     > qqspider.get_shuoshuo(class \<list>): 爬取指定好友的说说
 
@@ -38,6 +40,8 @@ A python crawler to grab "shuoshuo" from QQ zone
 
     > qqspider.get_word_cloud(class \<string>): 生成指定好友说说的词云 
 
+    > qqspider.get_wechat_word_cloud(): 生成微信好友朋友圈词云
+
 3. Others
     > cookies的获取基于selenium提供的自动化headless firefox, 建议手动输入
 
@@ -45,14 +49,39 @@ A python crawler to grab "shuoshuo" from QQ zone
 
     > 词云的stopwords采取了stopwords.txt中的内容
 
+4. Wechat
+    > WeChatMomentStat: Android平台下的数据导出工具
+    
+    > link: https://github.com/Chion82/WeChatMomentStat-Android
+
+    > BlueStacks: 蓝叠安卓模拟器, 开启root权限
+
+    > 导出的exported_sns.json替换result目录下的同名文件 
+
+## Usage
+1. shuoshuo
+```python
+init() # Set up "config.json"
+get_friends_list(): # Just need once
+get_given_friends_contents() or get_all_friends_contents() # Just need once
+get_shuoshuo()
+get_text_feel() or get_word_cloud()
+```
+2. photos
+```python
+init() # Set up "config.json"
+get_friends_list() # Just need once
+get_given_friends_contents() # Just need once
+get_photos()
+```
+3. Wechat
+```python
+export # Use BlueStacks and WeChatMomentStat
+get_wechat_word_cloud()
+```
 
 
 ## ScreenShots
-- ![](./images/1.png)
-- ![](./images/2.png)
-- ![](./images/3.png)
-- ![](./images/4.png)
-- ![](./images/5.png)
-- ![](./images/6.png)
+
 
 
